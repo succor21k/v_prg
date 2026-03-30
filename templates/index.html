@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아마준 추모영상 제작기 | AMAJUN Digital Memorial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-decor">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+    </div>
+
+    <main class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <span class="brand">AMAJUN</span>
+                <span class="sub-brand">PRODUCE</span>
+            </div>
+            <h1>추모영상 제작 시스템</h1>
+            <p>소중한 분의 마지막 순간을 아름다운 영상으로 기록합니다.</p>
+        </header>
+
+        <form id="produceForm" class="glass-panel main-form">
+            <div class="form-grid">
+                <!-- Section 1: Uploads -->
+                <section class="form-section">
+                    <h2 class="section-title"><i class="fas fa-cloud-upload-alt"></i> 자료 업로드</h2>
+                    
+                    <div class="upload-group">
+                        <label for="photos"><i class="fas fa-images"></i> 사진 업로드 (다중 선택 가능)</label>
+                        <div class="file-drop-area" id="photoDropArea">
+                            <input type="file" id="photos" name="photos" multiple accept="image/*">
+                            <span class="file-msg">사진을 여기로 드래그하거나 클릭하여 선택하세요.</span>
+                        </div>
+                    </div>
+
+                    <div class="upload-group">
+                        <label for="music"><i class="fas fa-music"></i> 배경음악 (MP3)</label>
+                        <input type="file" id="music" name="music" accept="audio/*">
+                    </div>
+
+                    <div class="upload-group">
+                        <label for="subtitle_file"><i class="fas fa-file-alt"></i> 자막 파일 업로드 (.txt or .srt)</label>
+                        <input type="file" id="subtitle_file" name="subtitle_file" accept=".txt,.srt">
+                    </div>
+                </section>
+
+                <!-- Section 2: Info -->
+                <section class="form-section">
+                    <h2 class="section-title"><i class="fas fa-user-edit"></i> 고인 및 사용자 정보</h2>
+                    
+                    <div class="input-group">
+                        <label for="deceased_name">고인 성함</label>
+                        <input type="text" id="deceased_name" name="deceased_name" placeholder="예: 홍길동" required>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="label-row">
+                            <label for="deceased_bio">고인 약력 / 소개</label>
+                            <div class="template-tags">
+                                <button type="button" class="tag-btn" onclick="insertText('deceased_bio', '평생을 이웃을 위해 헌신하셨습니다.')">평생 헌신</button>
+                                <button type="button" class="tag-btn" onclick="insertText('deceased_bio', '빛나는 삶을 사셨던 소중한 분입니다.')">빛나는 삶</button>
+                            </div>
+                        </div>
+                        <textarea id="deceased_bio" name="deceased_bio" rows="3" placeholder="예: 1950년 출생..."></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="label-row">
+                            <label for="user_bio">전하는 메시지 / 사용자 정보</label>
+                            <div class="template-tags">
+                                <button type="button" class="tag-btn" onclick="insertText('user_bio', '자녀 일동 드림')">자녀 일동</button>
+                                <button type="button" class="tag-btn" onclick="insertText('user_bio', '손주 일동 드림')">손주 일동</button>
+                                <button type="button" class="tag-btn" onclick="insertText('user_bio', '영원히 기억하겠습니다.')">추모 문구</button>
+                            </div>
+                        </div>
+                        <textarea id="user_bio" name="user_bio" rows="2" placeholder="예: 사랑하는 자녀 일동 드림"></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="subtitle_text">자막 직접 입력 (파일 업로드 대신 가능)</label>
+                        <textarea id="subtitle_text" name="subtitle_text" rows="3" placeholder="한 줄씩 입력해 주세요."></textarea>
+                    </div>
+                </section>
+
+                <!-- Section 3: Controls -->
+                <section class="form-section full-width">
+                    <div class="section-header-row">
+                        <h2 class="section-title"><i class="fas fa-sliders-h"></i> 제작 설정</h2>
+                        <div class="preset-group">
+                            <button type="button" class="preset-btn" onclick="applyPreset('solemn')">엄숙하게</button>
+                            <button type="button" class="preset-btn" onclick="applyPreset('standard')">표준</button>
+                            <button type="button" class="preset-btn" onclick="applyPreset('fast')">간결하게</button>
+                        </div>
+                    </div>
+                    <div class="controls-grid">
+                        <div class="control-item">
+                            <div class="label-row">
+                                <label for="video_speed">영상 변환 속도</label>
+                                <span class="badge" id="vSpeedVal">1.0x</span>
+                            </div>
+                            <input type="range" id="video_speed" name="video_speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                        </div>
+                        <div class="control-item">
+                            <div class="label-row">
+                                <label for="title_speed">자막: 타이틀 속도</label>
+                                <span class="badge" id="tSpeedVal">1.0x</span>
+                            </div>
+                            <input type="range" id="title_speed" name="title_speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                        </div>
+                        <div class="control-item">
+                            <div class="label-row">
+                                <label for="body_speed">자막: 본문 속도</label>
+                                <span class="badge" id="bSpeedVal">1.0x</span>
+                            </div>
+                            <input type="range" id="body_speed" name="body_speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                        </div>
+                        <div class="control-item">
+                            <div class="label-row">
+                                <label for="ending_speed">자막: 엔딩 속도</label>
+                                <span class="badge" id="eSpeedVal">1.0x</span>
+                            </div>
+                            <input type="range" id="ending_speed" name="ending_speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="btn-container">
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span class="btn-text">추모영상 제작하기</span>
+                    <i class="fas fa-magic"></i>
+                </button>
+            </div>
+        </form>
+
+        <div id="statusPanel" class="glass-panel status-panel hidden">
+            <h3 id="statusTitle">영상 제작 중...</h3>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <p id="statusMsg">서버에서 파일을 처리하고 있습니다. 잠시만 기다려 주세요.</p>
+            <div id="resultInfo" class="result-info hidden">
+                <p><i class="fas fa-check-circle"></i> 영상 제작이 성공적으로 완료되었습니다!</p>
+                <div class="success-actions">
+                    <button id="goEditorBtn" class="action-btn-sm"><i class="fas fa-edit"></i> 자막 세부 편집하기</button>
+                    <p class="file-path" id="outputPath"></p>
+                </div>
+                <div class="file-list" id="fileList"></div>
+            </div>
+        </div>
+
+        <div id="editorSection" class="glass-panel editor-section hidden">
+            <h2 class="section-title"><i class="fas fa-pen-nib"></i> 자막 세부 편집 & 프리뷰</h2>
+            <div class="editor-layout">
+                <div class="video-preview-col">
+                    <div class="preview-wrapper">
+                        <video id="previewVideo" controls poster="https://via.placeholder.com/640x360/1a1a1a/ffffff?text=Preview">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <div class="preview-controls">
+                        <p class="hint"><i class="fas fa-info-circle"></i> 자막 리스트를 클릭하면 해당 시간으로 이동합니다.</p>
+                    </div>
+                </div>
+                <div class="subtitle-edit-col">
+                    <div id="subtitleList" class="subtitle-list">
+                        <!-- Items will be injected by JS -->
+                    </div>
+                    <div class="editor-footer">
+                        <button id="saveSubtitlesBtn" class="submit-btn sm">
+                            <span class="btn-text">자막 업데이트</span>
+                            <i class="fas fa-save"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <p>&copy; 2026 AMAJUN Digital Memorial. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
